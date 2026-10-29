@@ -22,7 +22,11 @@ pub fn run() {
             tracker::start(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![commands::list_apps, commands::set_group])
+        .invoke_handler(tauri::generate_handler![
+    commands::list_apps,
+    commands::set_group,
+    commands::set_tracked
+])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

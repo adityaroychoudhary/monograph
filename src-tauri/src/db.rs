@@ -21,5 +21,13 @@ pub fn open(path: &Path) -> Result<Connection> {
          CREATE INDEX IF NOT EXISTS idx_sessions_started
              ON sessions(started_at);",
     )?;
+    // migrate older databases; fails harmlessly if the column already exists
+if conn
+    .execute("ALTER TABLE apps ADD COLUMN tracked INTEGER NOT NULL DEFAULT 0", [])
+    .is_ok()
+{
+    // keep tracking the apps you've already assigned to a group
+    conn.execute("UPDATE apps SET tracked = 1 WHERE grp != 'unassigned'", [])?;
+}
     Ok(conn)
 }
