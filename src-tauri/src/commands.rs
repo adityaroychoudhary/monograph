@@ -52,9 +52,9 @@ pub fn set_tracked(db: State<Db>, name: String, tracked: bool) -> Result<(), Str
 
 #[derive(Serialize)]
 pub struct Bucket {
-    t: i64,        // bucket start, unix ms
-    work: i64,     // ms of work usage in this bucket
-    personal: i64, // ms of personal usage in this bucket
+    t: i64,        
+    work: i64,     
+    personal: i64, 
 }
 
 #[tauri::command]
@@ -63,9 +63,11 @@ pub fn usage_buckets(
     from_ms: i64,
     to_ms: i64,
     bucket_min: i64,
+    tz_offset_min: i64,
 ) -> Result<Vec<Bucket>, String> {
     let step = bucket_min * 60_000;
-    let start = from_ms - from_ms.rem_euclid(step); // align to bucket boundary
+    let off = tz_offset_min * 60_000;
+    let start = from_ms - (from_ms + off).rem_euclid(step);
     let n = ((to_ms - start) / step + 1) as usize;
     let mut buckets: Vec<Bucket> = (0..n)
         .map(|i| Bucket { t: start + i as i64 * step, work: 0, personal: 0 })
@@ -88,7 +90,6 @@ pub fn usage_buckets(
         .collect::<Result<Vec<_>, _>>()
         .map_err(|e| e.to_string())?;
 
-    // a session can span several buckets, so split it across them
     for (s, e, grp) in rows {
         let first = ((s.max(start) - start) / step) as usize;
         let last = (((e.min(to_ms)) - start) / step) as usize;

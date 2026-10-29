@@ -5,3 +5,6 @@ th, td { text-align: left; padding: 8px; border-bottom: 1px solid #8884; }
 button { margin-right: 6px; padding: 4px 10px; border-radius: 6px;
          border: 1px solid #8886; background: transparent; color: inherit; cursor: pointer; }
 button.active { background: #3b82f6; border-color: #3b82f6; color: white; }
+.chart-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.chart-controls span { margin: 0 10px; opacity: 0.7; font-size: 0.9em; }
+button:disabled { opacity: 0.35; cursor: default; }
