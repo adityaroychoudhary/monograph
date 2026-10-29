@@ -1,51 +1,63 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
+import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
 
-function App() {
-  const [greetMsg, setGreetMsg] = useState("");
-  const [name, setName] = useState("");
+type Group = "personal" | "work" | "unassigned";
+interface AppRow {
+  name: string;
+  grp: Group;
+  total_secs: number;
+}
 
-  async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
-    setGreetMsg(await invoke("greet", { name }));
-  }
+const fmt = (s: number) => {
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  return h ? `${h}h ${m}m` : `${m}m ${s % 60}s`;
+};
+
+export default function App() {
+  const [apps, setApps] = useState<AppRow[]>([]);
+
+  const load = () => invoke<AppRow[]>("list_apps").then(setApps);
+
+  useEffect(() => {
+    load();
+    const t = setInterval(load, 5000);
+    return () => clearInterval(t);
+  }, []);
+
+  const assign = async (name: string, grp: Group) => {
+    await invoke("set_group", { name, grp });
+    load();
+  };
 
   return (
-    <main className="container">
-      <h1>Welcome to Tauri + React</h1>
-
-      <div className="row">
-        <a href="https://vite.dev" target="_blank">
-          <img src="/vite.svg" className="logo vite" alt="Vite logo" />
-        </a>
-        <a href="https://tauri.app" target="_blank">
-          <img src="/tauri.svg" className="logo tauri" alt="Tauri logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <p>Click on the Tauri, Vite, and React logos to learn more.</p>
-
-      <form
-        className="row"
-        onSubmit={(e) => {
-          e.preventDefault();
-          greet();
-        }}
-      >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
-        <button type="submit">Greet</button>
-      </form>
-      <p>{greetMsg}</p>
+    <main>
+      <h1>Apps</h1>
+      <table>
+        <thead>
+          <tr><th>App</th><th>Total</th><th>Group</th></tr>
+        </thead>
+        <tbody>
+          {apps.map((a) => (
+            <tr key={a.name}>
+              <td>{a.name}</td>
+              <td>{fmt(a.total_secs)}</td>
+              <td>
+                {(["personal", "work"] as const).map((g) => (
+                  <button
+                    key={g}
+                    className={a.grp === g ? "active" : ""}
+                    onClick={() => assign(a.name, a.grp === g ? "unassigned" : g)}
+                  >
+                    {g}
+                  </button>
+                ))}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </main>
   );
 }
-
-export default App;

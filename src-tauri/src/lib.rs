@@ -1,14 +1,12 @@
 mod db;
+mod tracker;
+mod watcher;
+mod commands;
 
 use std::sync::Mutex;
 use tauri::Manager;
 
 pub struct Db(pub Mutex<rusqlite::Connection>);
-
-#[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -21,9 +19,10 @@ pub fn run() {
             let conn = db::open(&path)?;
             println!("Database ready at {:?}", path);
             app.manage(Db(Mutex::new(conn)));
+            tracker::start(app.handle().clone());
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![greet])
+        .invoke_handler(tauri::generate_handler![commands::list_apps, commands::set_group])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
