@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import "./App.css";
+import UsageChart from "./UsageChart";
 
 type Group = "personal" | "work" | "unassigned";
 interface AppRow {
@@ -39,6 +40,7 @@ export default function App() {
 
   return (
     <main>
+    <UsageChart/>
       <h1>Apps</h1>
       <table>
         <thead>
