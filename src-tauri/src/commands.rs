@@ -1,6 +1,7 @@
 use crate::Db;
 use serde::Serialize;
 use tauri::State;
+use tauri_plugin_autostart::ManagerExt;
 
 #[derive(Serialize)]
 pub struct AppRow {
@@ -106,4 +107,16 @@ pub fn usage_buckets(
         }
     }
     Ok(buckets)
+}
+
+#[tauri::command]
+pub fn get_autostart(app: tauri::AppHandle) -> Result<bool, String> {
+    app.autolaunch().is_enabled().map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub fn set_autostart(app: tauri::AppHandle, enabled: bool) -> Result<(), String> {
+    let manager = app.autolaunch();
+    let res = if enabled { manager.enable() } else { manager.disable() };
+    res.map_err(|e| e.to_string())
 }

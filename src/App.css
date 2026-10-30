@@ -8,3 +8,4 @@ button.active { background: #3b82f6; border-color: #3b82f6; color: white; }
 .chart-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
 .chart-controls span { margin: 0 10px; opacity: 0.7; font-size: 0.9em; }
 button:disabled { opacity: 0.35; cursor: default; }
+.autostart { display: block; margin-top: 20px; opacity: 0.8; }

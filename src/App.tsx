@@ -19,6 +19,7 @@ const fmt = (s: number) => {
 
 export default function App() {
   const [apps, setApps] = useState<AppRow[]>([]);
+  const [autostart, setAutostart] = useState(false);
 
   const load = () => invoke<AppRow[]>("list_apps").then(setApps);
 
@@ -27,6 +28,10 @@ export default function App() {
     const t = setInterval(load, 5000);
     return () => clearInterval(t);
   }, []);
+  
+  useEffect(() => {
+  invoke<boolean>("get_autostart").then(setAutostart);
+}, []);
 
   const assign = async (name: string, grp: Group) => {
     await invoke("set_group", { name, grp });
@@ -36,6 +41,11 @@ export default function App() {
   const toggleTracked = async (name: string, tracked: boolean) => {
   await invoke("set_tracked", { name, tracked });
   load();
+};
+
+const toggleAutostart = async (enabled: boolean) => {
+  await invoke("set_autostart", { enabled });
+  setAutostart(enabled);
 };
 
   return (
@@ -73,6 +83,14 @@ export default function App() {
     ))}
   </tbody>
       </table>
+      <label className="autostart">
+  <input
+    type="checkbox"
+    checked={autostart}
+    onChange={(e) => toggleAutostart(e.target.checked)}
+  />
+  Start Monograph at login
+</label>
     </main>
   );
 }
